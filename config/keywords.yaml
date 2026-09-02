@@ -31,9 +31,12 @@ keywords:
     - "semiconductor thermal management"
     - "electronics cooling"
     - "thermal packaging"
-    - "wide-bandgap semiconductor"
-    - "GaN thermal"
-    - "SiC thermal"
+    - "spin dynamics"
+    - "spin-orbit torque"
+    - "spin current"
+    - "spin hall effect"
+    - "ballistic transport"
+    - "MOKE"
   include_all: []
 
   # 의학·생물학 논문의 열전달, 비관련 학문 분야, 문헌 종설을 최대한 걸러 냅니다.
@@ -55,6 +58,7 @@ keywords:
     - "finance"
     - "philosophy"
     - "humanities"
+    - "review"
     - "literature review"
     - "systematic review"
     - "meta-analysis"
@@ -68,23 +72,45 @@ excluded_journals:
 excluded_publishers:
   - "MDPI"
 
+# true로 바꾸면 Tier에 없는 저널도 낮은 점수로 후보에 포함합니다.
+# 연구 알림의 신뢰도를 위해 기본값은 false입니다.
+journal_policy:
+  allow_unlisted_journals: false
+
 journals:
-  # Nature 자매지는 journal 이름이 아니라 출판사 메타데이터로 포괄합니다.
-  tier_1_publishers:
-    - "Nature Portfolio"
+  # 저널명을 명시적으로 지정한 경우에만 해당 Tier를 적용합니다.
   tier_1:
     - "Nature"
-    - "Nature Communications"
     - "Science"
+    # 출판사 메타데이터 누락에도 확실히 Tier 1로 처리할 주요 Nature 자매지
+    - "Nature Materials"
+    - "Nature Physics"
+    - "Nature Chemistry"
+    - "Nature Nanotechnology"
+    - "Nature Energy"
+    - "Nature Electronics"
+    - "Nature Photonics"
+    - "Nature Methods"
+    - "Nature Reviews Materials"
+    - "Nature Chemical Engineering"
+    - "Nature Computational Science"
+
+  # 최상위 범용 재료·물리 저널
+  tier_2:
+    - "Nature Communications"
     - "Science Advances"
     - "Advanced Materials"
     - "Physical Review Letters"
+    - "ACS Nano"
 
-  # Journal list.csv: Q1, JCI >= 2.00, eScience 제외.
-  # Nature Portfolio 저널은 위 tier_1 출판사 규칙으로 먼저 처리합니다.
-  tier_2:
-    - "Physical Review Materials"
+  # 기존 Tier 2: Journal list.csv Q1, JCI >= 2.00
+  tier_3:
     - "Physical Review B"
+    - "Communications Materials"
+    - "Communications Physics"
+    - "Communications Chemistry"
+    - "Acta Materialia"
+    - "Advanced Science"
     - "Nano-Micro Letters"
     - "Advanced Powder Materials"
     - "Advanced Fiber Materials"
@@ -95,53 +121,32 @@ journals:
     - "International Journal of Plasticity"
     - "Journal of Materials Science & Technology"
     - "Energy Storage Materials"
-    - "International Journal of Extreme Manufacturing"
-    - "Nano Materials Science"
-    - "Carbon Energy"
     - "Advanced Functional Materials"
     - "InfoMat"
     - "Journal of Magnesium and Alloys"
     - "Progress in Materials Science"
-    - "Interdisciplinary Materials"
     - "Nano Energy"
     - "SusMat"
     - "ACS Energy Letters"
-    - "Exploration"
-    - "Advanced Industrial and Engineering Polymer Research"
-    - "ACS Nano"
-    - "Accounts of Materials Research"
     - "Cement and Concrete Research"
     - "Matter"
-    - "Carbon Neutralization"
 
-  # Journal list.csv: Q1, 1.00 <= JCI < 2.00
-  tier_3:
+  # 기존 Tier 3: Journal list.csv Q1, 1.00 <= JCI < 2.00
+  tier_4:
     - "Additive Manufacturing"
-    - "Acta Materialia"
+    - "Physical Review Materials"
     - "Carbon"
     - "Rare Metals"
     - "Corrosion Science"
     - "Materials Today Physics"
-    - "Advanced Science"
     - "Energy & Environmental Materials"
-    - "Smart Materials in Manufacturing"
-    - "Materials Reports: Energy"
-    - "SmartMat"
-    - "International Journal of Minerals, Metallurgy and Materials"
-    - "Aggregate"
-    - "Corrosion Communications"
-    - "Journal of Materiomics"
-    - "Progress in Photovoltaics"
     - "Materials Science & Engineering R-Reports"
     - "Virtual and Physical Prototyping"
     - "Responsive Materials"
     - "Small"
     - "Materials Horizons"
-    - "Sustainable Materials and Technologies"
-    - "Cleaner Materials"
     - "Wearable Electronics"
     - "Electron"
-    - "Construction and Building Materials"
     - "EcoMat"
     - "Materials Research Letters"
     - "Advanced Optical Materials"
@@ -151,42 +156,49 @@ journals:
     - "Materials Today Sustainability"
     - "Materials Today Advances"
     - "ACS Materials Letters"
-    - "Materials Genome Engineering Advances"
-    - "Journal of Materials Processing Technology"
-    - "Wear"
-    - "Soft Science"
     - "Materials & Design"
     - "Journal of Materials Research and Technology"
     - "Materials Today Energy"
     - "Materials Science and Engineering A"
     - "Journal of Materials Chemistry A"
-    - "Materials Futures"
-    - "Journal of Nanostructure in Chemistry"
-    - "Battery Energy"
     - "Materials Today Catalysis"
     - "Nano Convergence"
-    - "Energy Reviews"
-    - "Energy Materials"
-    - "Science China-Materials"
     - "Industrial Chemistry & Materials"
     - "ACS Applied Materials & Interfaces"
-    - "Journal of Power Sources"
     - "Supramolecular Materials"
     - "Materials Today Chemistry"
-    - "Tungsten"
-    - "Progress in Natural Science-Materials International"
-    - "Device"
     - "Small Structures"
     - "Materials Today Nano"
-    - "Collagen and Leather"
-    - "Energy Materials and Devices"
     - "Chemistry of Materials"
-    - "International Materials Reviews"
+
+# OpenAlex 색인 전의 최신 Nature 논문도 놓치지 않도록 공식 RSS를 병행합니다.
+# 필요한 Nature 자매지는 같은 형식으로 계속 추가할 수 있습니다.
+rss_feeds:
+  - journal: "Nature"
+    url: "https://feeds.nature.com/nature/rss/current"
+  - journal: "Nature Materials"
+    url: "https://feeds.nature.com/nmat/rss/current"
+  - journal: "Nature Physics"
+    url: "https://feeds.nature.com/nphys/rss/current"
+  - journal: "Nature Chemistry"
+    url: "https://feeds.nature.com/nchem/rss/current"
+  - journal: "Nature Nanotechnology"
+    url: "https://feeds.nature.com/nnano/rss/current"
+  - journal: "Nature Energy"
+    url: "https://feeds.nature.com/nenergy/rss/current"
+  - journal: "Nature Electronics"
+    url: "https://feeds.nature.com/natelectron/rss/current"
+  - journal: "Nature Photonics"
+    url: "https://feeds.nature.com/nphoton/rss/current"
+  - journal: "Nature Methods"
+    url: "https://feeds.nature.com/nmeth/rss/current"
+  - journal: "Nature Communications"
+    url: "https://feeds.nature.com/ncomms/rss/current"
 
 delivery:
-  max_papers: 15
+  max_papers: 10
   language: "ko"
 
-# 매일 실행이 몇 분 늦어져도 전날 논문을 놓치지 않도록 30시간을 수집합니다.
+# 매일 실행 시 최근 일주일 논문을 탐색합니다. 이미 발송한 DOI는 별도 이력에서 제외됩니다.
 collection:
-  lookback_hours: 30
+  lookback_hours: 168

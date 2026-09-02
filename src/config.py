@@ -15,12 +15,19 @@ class AlertConfig:
     include_all: tuple[str, ...]
     exclude: tuple[str, ...]
     journal_tiers: dict[str, tuple[str, ...]]
-    tier_1_publishers: tuple[str, ...]
+    rss_feeds: tuple["JournalFeed", ...]
     excluded_journals: tuple[str, ...]
     excluded_publishers: tuple[str, ...]
+    allow_unlisted_journals: bool
     max_papers: int
     language: str
     lookback_hours: int
+
+
+@dataclass(frozen=True)
+class JournalFeed:
+    journal: str
+    url: str
 
 
 def load_config(path: str | Path) -> AlertConfig:
@@ -40,6 +47,7 @@ def load_config(path: str | Path) -> AlertConfig:
     journals = _required_mapping(raw, "journals")
     delivery = _required_mapping(raw, "delivery")
     collection = _required_mapping(raw, "collection")
+    journal_policy = _required_mapping(raw, "journal_policy")
 
     include_any = _string_list(keywords, "include_any")
     include_all = _string_list(keywords, "include_all")
@@ -49,10 +57,10 @@ def load_config(path: str | Path) -> AlertConfig:
 
     journal_tiers = {
         tier: tuple(_string_list(journals, tier))
-        for tier in ("tier_1", "tier_2", "tier_3")
+        for tier in ("tier_1", "tier_2", "tier_3", "tier_4")
     }
     _ensure_unique_journals(journal_tiers)
-    tier_1_publishers = tuple(_string_list(journals, "tier_1_publishers"))
+    rss_feeds = _journal_feeds(raw)
     excluded_journals = tuple(_string_list(raw, "excluded_journals"))
     excluded_publishers = tuple(_string_list(raw, "excluded_publishers"))
 
@@ -66,9 +74,10 @@ def load_config(path: str | Path) -> AlertConfig:
         include_all=tuple(include_all),
         exclude=tuple(exclude),
         journal_tiers=journal_tiers,
-        tier_1_publishers=tier_1_publishers,
+        rss_feeds=rss_feeds,
         excluded_journals=excluded_journals,
         excluded_publishers=excluded_publishers,
+        allow_unlisted_journals=_required_bool(journal_policy, "allow_unlisted_journals"),
         max_papers=max_papers,
         language=language,
         lookback_hours=_positive_int(collection, "lookback_hours"),
@@ -80,6 +89,22 @@ def _required_mapping(value: dict[str, Any], key: str) -> dict[str, Any]:
     if not isinstance(item, dict):
         raise ValueError(f"'{key}' 항목은 객체여야 합니다.")
     return item
+
+
+def _journal_feeds(value: dict[str, Any]) -> tuple[JournalFeed, ...]:
+    feeds = value.get("rss_feeds")
+    if not isinstance(feeds, list):
+        raise ValueError("'rss_feeds' 항목은 목록이어야 합니다.")
+    parsed: list[JournalFeed] = []
+    for feed in feeds:
+        if not isinstance(feed, dict):
+            raise ValueError("rss_feeds의 각 항목은 객체여야 합니다.")
+        journal = _required_string(feed, "journal")
+        url = _required_string(feed, "url")
+        if not url.startswith("https://"):
+            raise ValueError("rss_feeds.url은 https URL이어야 합니다.")
+        parsed.append(JournalFeed(journal=journal, url=url))
+    return tuple(parsed)
 
 
 def _string_list(value: dict[str, Any], key: str) -> list[str]:
@@ -103,6 +128,13 @@ def _positive_int(value: dict[str, Any], key: str) -> int:
     item = value.get(key)
     if isinstance(item, bool) or not isinstance(item, int) or item < 1:
         raise ValueError(f"'{key}' 항목은 1 이상의 정수여야 합니다.")
+    return item
+
+
+def _required_bool(value: dict[str, Any], key: str) -> bool:
+    item = value.get(key)
+    if not isinstance(item, bool):
+        raise ValueError(f"'{key}' 항목은 true 또는 false여야 합니다.")
     return item
 
 

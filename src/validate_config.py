@@ -37,7 +37,8 @@ def _print_summary(config: AlertConfig) -> None:
     print(f"- 최대 전송: {config.max_papers}편 / 최근 {config.lookback_hours}시간")
     print(f"- 제외 저널: {', '.join(config.excluded_journals) or '없음'}")
     print(f"- 제외 출판사: {', '.join(config.excluded_publishers) or '없음'}")
-    print(f"- Tier 1 출판사: {', '.join(config.tier_1_publishers) or '없음'}")
+    print(f"- Tier 외 저널 허용: {'예' if config.allow_unlisted_journals else '아니오'}")
+    print(f"- Nature RSS 피드: {len(config.rss_feeds)}개")
     for tier, journals in config.journal_tiers.items():
         print(f"- {tier}: {', '.join(journals) or '없음'}")
 

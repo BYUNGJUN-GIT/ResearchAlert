@@ -7,5 +7,5 @@ venv/
 # Local environment and secrets
 .env
 
-# Runtime state (created in a later step)
-data/sent_dois.json
+# Local candidate preview (the delivery history is tracked in Git for scheduled runs)
+data/latest_candidates.json
