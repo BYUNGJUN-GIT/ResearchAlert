@@ -1,4 +1,4 @@
-name: Daily Research Alert
+name: Weekly Research Alert
 
 on:
   workflow_dispatch:

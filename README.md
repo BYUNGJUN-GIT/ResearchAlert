@@ -86,7 +86,7 @@ GitHub 저장소에서 **Settings → Secrets and variables → Actions → New 
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
 
-`.github/workflows/daily-alert.yml`은 매주 월요일 오전 7:30 KST에 실행됩니다. GitHub의 **Actions → Daily Research Alert → Run workflow**로 예약 전 수동 시험 실행도 할 수 있습니다.
+`.github/workflows/daily-alert.yml`은 매주 월요일 오전 7:30 KST에 실행됩니다. GitHub의 **Actions → Weekly Research Alert → Run workflow**로 예약 전 수동 시험 실행도 할 수 있습니다.
 
 기본적으로 키워드당 최대 100건씩 3페이지(최대 300건)를 받아 최근 7일의 관련 논문을 놓치지 않게 합니다. 검색 결과 수를 줄여 빠르게 확인하려면 다음처럼 실행합니다.
 
