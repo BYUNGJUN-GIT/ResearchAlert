@@ -78,10 +78,13 @@ journals:
     - "Science"
     - "Science Advances"
     - "Advanced Materials"
+    - "Physical Review Letters"
 
   # Journal list.csv: Q1, JCI >= 2.00, eScience 제외.
   # Nature Portfolio 저널은 위 tier_1 출판사 규칙으로 먼저 처리합니다.
   tier_2:
+    - "Physical Review Materials"
+    - "Physical Review B"
     - "Nano-Micro Letters"
     - "Advanced Powder Materials"
     - "Advanced Fiber Materials"
