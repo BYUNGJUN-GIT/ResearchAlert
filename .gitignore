@@ -7,5 +7,5 @@ venv/
 # Local environment and secrets
 .env
 
-# Local candidate preview (the delivery history is tracked in Git for scheduled runs)
+# Local candidate preview
 data/latest_candidates.json

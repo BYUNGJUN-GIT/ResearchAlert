@@ -53,13 +53,7 @@ python src/collect_papers.py
 
 터미널과 Telegram에는 최대 10편의 추천 후보와, 제목·초록 전체를 바탕으로 Gemini가 새로 작성한 한국어 핵심 요약 한 문장이 표시됩니다. 전체 결과는 `data/latest_candidates.json`에 저장됩니다. 이 결과 파일은 임시 실행 결과이므로 Git에 올라가지 않습니다.
 
-`data/sent_dois.json`은 실제 텔레그램 발송이 성공한 논문의 DOI를 1년간 보관하는 이력입니다. 다음 단계의 발송기가 성공 응답을 받은 뒤에만 이력을 기록하므로, 발송 실패 때문에 논문이 사라지거나 이미 추천한 논문이 다음 날 다시 추천되는 일을 막습니다.
-
-## 3단계: 일일 실행과 중복 방지
-
-`daily_alert.py`는 수집한 후보를 Telegram으로 전송한 뒤에만 `data/sent_dois.json`에 DOI를 기록합니다. 다음 실행은 최근 7일을 다시 검색해도 이 이력에 있는 DOI를 제외합니다.
-
-Telegram 설정 전에는 안전한 미리보기 모드로 실행하세요.
+매주 월요일 실행은 직전 7일의 논문만 조회하며, 추천 이력은 따로 저장하지 않습니다. 따라서 같은 논문이 다음 주의 날짜 범위에 다시 포함되지 않는 한 재추천되지 않습니다. Telegram 설정 전에는 안전한 미리보기 모드로 실행하세요.
 
 ```powershell
 python src/daily_alert.py --dry-run
@@ -92,7 +86,7 @@ GitHub 저장소에서 **Settings → Secrets and variables → Actions → New 
 - `TELEGRAM_BOT_TOKEN`
 - `TELEGRAM_CHAT_ID`
 
-`.github/workflows/daily-alert.yml`은 매주 월요일 오전 7:30 KST에 실행됩니다. 실제 Telegram 전송이 모두 성공한 경우에만 `data/sent_dois.json`을 커밋하므로, 이후 실행에서는 이미 보낸 논문을 다시 추천하지 않습니다. GitHub의 **Actions → Daily Research Alert → Run workflow**로 예약 전 수동 시험 실행도 할 수 있습니다.
+`.github/workflows/daily-alert.yml`은 매주 월요일 오전 7:30 KST에 실행됩니다. GitHub의 **Actions → Daily Research Alert → Run workflow**로 예약 전 수동 시험 실행도 할 수 있습니다.
 
 기본적으로 키워드당 최대 100건씩 3페이지(최대 300건)를 받아 최근 7일의 관련 논문을 놓치지 않게 합니다. 검색 결과 수를 줄여 빠르게 확인하려면 다음처럼 실행합니다.
 

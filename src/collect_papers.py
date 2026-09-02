@@ -18,7 +18,6 @@ from urllib.parse import urlencode
 from urllib.request import Request, urlopen
 
 from config import AlertConfig, load_config
-from history import load_sent_ids
 from nature_rss import fetch_rss_works
 
 OPENALEX_WORKS_URL = "https://api.openalex.org/works"
@@ -140,7 +139,7 @@ def fetch_source_works(source_id: str, from_date: str, to_date: str, api_key: st
     return [item for item in results if isinstance(item, dict)]
 
 
-def collect(config: AlertConfig, per_keyword: int, max_pages: int, sent_ids: set[str], api_key: str) -> list[Paper]:
+def collect(config: AlertConfig, per_keyword: int, max_pages: int, api_key: str) -> list[Paper]:
     """설정 키워드로 수집하고 중복을 제거한 뒤, 점수 순으로 반환한다."""
     since = (datetime.now(UTC) - timedelta(hours=config.lookback_hours)).date().isoformat()
     today = datetime.now(UTC).date().isoformat()
@@ -175,14 +174,14 @@ def collect(config: AlertConfig, per_keyword: int, max_pages: int, sent_ids: set
         if work_id:
             unique_works[work_id] = work
 
-    papers = [_to_paper(work, config, sent_ids) for work in unique_works.values()]
+    papers = [_to_paper(work, config) for work in unique_works.values()]
     selected = [paper for paper in papers if paper is not None]
     return sorted(selected, key=lambda paper: (-paper.score, paper.publication_date or "", paper.title.casefold()))[
         : config.max_papers
     ]
 
 
-def _to_paper(work: dict[str, Any], config: AlertConfig, sent_ids: set[str]) -> Paper | None:
+def _to_paper(work: dict[str, Any], config: AlertConfig) -> Paper | None:
     title = str(work.get("title") or "").strip()
     abstract = _reconstruct_abstract(work.get("abstract_inverted_index"))
     if not title:
@@ -201,8 +200,6 @@ def _to_paper(work: dict[str, Any], config: AlertConfig, sent_ids: set[str]) -> 
     publishers = _publishers(source)
     doi = _string_or_none(work.get("doi"))
     work_id = str(work.get("id") or doi)
-    if (doi or work_id).casefold() in sent_ids:
-        return None
     if _is_excluded(journal, publishers, doi, config):
         return None
 
@@ -364,7 +361,6 @@ def main() -> int:
     parser = argparse.ArgumentParser(description="OpenAlex 기반 Research Alert 후보 수집")
     parser.add_argument("--config", type=Path, default=Path("config/keywords.yaml"))
     parser.add_argument("--output", type=Path, default=Path("data/latest_candidates.json"))
-    parser.add_argument("--history", type=Path, default=Path("data/sent_dois.json"))
     parser.add_argument("--per-keyword", type=int, default=100, help="키워드당 OpenAlex 최대 검색 결과")
     parser.add_argument("--max-pages", type=int, default=3, help="키워드당 최대 페이지 수")
     args = parser.parse_args()
@@ -378,7 +374,7 @@ def main() -> int:
         api_key = os.getenv("OPENALEX_API_KEY")
         if not api_key:
             raise RuntimeError("OPENALEX_API_KEY 환경 변수가 필요합니다. OpenAlex 무료 API 키를 설정하세요.")
-        papers = collect(config, args.per_keyword, args.max_pages, load_sent_ids(args.history), api_key)
+        papers = collect(config, args.per_keyword, args.max_pages, api_key)
         write_results(papers, args.output)
     except ValueError as error:
         print(f"설정 오류: {error}", file=sys.stderr)
