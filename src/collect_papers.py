@@ -23,6 +23,9 @@ from publisher_abstract import fetch_public_abstract
 
 OPENALEX_WORKS_URL = "https://api.openalex.org/works"
 USER_AGENT = "ResearchAlert/0.1 (personal academic literature alert)"
+# 34개 키워드와 상위 Tier 저널을 한 번에 조회하더라도 OpenAlex의 공유 API
+# 한도에 걸리지 않도록 모든 OpenAlex 요청 사이에 간격을 둔다.
+OPENALEX_REQUEST_INTERVAL_SECONDS = 2.2
 
 # 응용 열관리 키워드는 넓게 잡히므로 낮은 가중치를 준다.
 LOW_PRIORITY_KEYWORDS = {
@@ -91,6 +94,7 @@ def _request_with_retry(request: Request, keyword: str) -> dict[str, Any]:
             with urlopen(request, timeout=30) as response:
                 payload = json.load(response)
             if isinstance(payload, dict):
+                time.sleep(OPENALEX_REQUEST_INTERVAL_SECONDS)
                 return payload
             raise RuntimeError("OpenAlex가 JSON 객체가 아닌 응답을 반환했습니다.")
         except HTTPError as exc:
