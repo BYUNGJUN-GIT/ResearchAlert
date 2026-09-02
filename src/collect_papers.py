@@ -19,6 +19,7 @@ from urllib.request import Request, urlopen
 
 from config import AlertConfig, load_config
 from nature_rss import fetch_rss_works
+from publisher_abstract import fetch_public_abstract
 
 OPENALEX_WORKS_URL = "https://api.openalex.org/works"
 USER_AGENT = "ResearchAlert/0.1 (personal academic literature alert)"
@@ -187,12 +188,12 @@ def _to_paper(work: dict[str, Any], config: AlertConfig) -> Paper | None:
     if not title:
         return None
 
-    text = _normalize_for_matching(f"{title}\n{abstract}")
-    any_matches = tuple(keyword for keyword in config.include_any if _normalize_for_matching(keyword) in text)
-    all_matches = tuple(keyword for keyword in config.include_all if _normalize_for_matching(keyword) in text)
-    if (config.include_any and not any_matches) or len(all_matches) != len(config.include_all):
-        return None
-    if any(_normalize_for_matching(word) in text for word in config.exclude):
+    # OpenAlex 초록이 없는 경우에도 불필요하게 많은 저널 페이지를 요청하지 않도록,
+    # 제목이 최소 한 개의 관심 키워드와 맞는 후보만 보조 조회한다.
+    title_text = _normalize_for_matching(title)
+    if not abstract and config.include_any and not any(
+        _normalize_for_matching(keyword) in title_text for keyword in config.include_any
+    ):
         return None
 
     source = _source(work)
@@ -206,10 +207,23 @@ def _to_paper(work: dict[str, Any], config: AlertConfig) -> Paper | None:
     tier = _tier_for(journal, publishers, config)
     if tier == "other" and not config.allow_unlisted_journals:
         return None
-    matched = tuple(dict.fromkeys((*any_matches, *all_matches)))
-    score, keyword_score, tier_score = _score(title, abstract, matched, tier)
     location = work.get("primary_location") if isinstance(work.get("primary_location"), dict) else {}
     landing_page_url = _string_or_none(location.get("landing_page_url")) or doi
+    if not abstract:
+        abstract = fetch_public_abstract(landing_page_url)
+        if abstract:
+            print(f"OpenAlex 초록 미제공: 공개 저널 메타데이터로 보완 ({title})", file=sys.stderr)
+
+    text = _normalize_for_matching(f"{title}\n{abstract}")
+    any_matches = tuple(keyword for keyword in config.include_any if _normalize_for_matching(keyword) in text)
+    all_matches = tuple(keyword for keyword in config.include_all if _normalize_for_matching(keyword) in text)
+    if (config.include_any and not any_matches) or len(all_matches) != len(config.include_all):
+        return None
+    if any(_normalize_for_matching(word) in text for word in config.exclude):
+        return None
+
+    matched = tuple(dict.fromkeys((*any_matches, *all_matches)))
+    score, keyword_score, tier_score = _score(title, abstract, matched, tier)
 
     return Paper(
         id=work_id,

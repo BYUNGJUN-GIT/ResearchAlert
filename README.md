@@ -43,6 +43,8 @@ $env:GEMINI_API_KEY = "발급받은_Gemini_API_키"
 
 OpenAlex 반영이 늦을 수 있는 최신 Nature 논문은 공식 Nature RSS를 병행 수집합니다. 현재 Nature, Nature Materials, Nature Physics, Nature Chemistry, Nature Nanotechnology, Nature Energy, Nature Electronics, Nature Photonics, Nature Methods 및 Nature Communications 피드를 설정했습니다.
 
+OpenAlex가 초록을 제공하지 않는 후보는 DOI를 따라 저널 논문 랜딩 페이지의 공개 인용 메타데이터에서 초록을 한 번만 보완 조회합니다. 전문 PDF·유료 본문은 요청하지 않으며, 제목이 관심 키워드와 맞는 후보에만 적용합니다.
+
 점수는 일치한 키워드별 가중치와 저널 tier 가점의 합입니다. `spin` 또는 `magnon`이 들어간 키워드는 20점, 열관리 응용 키워드는 10점, 나머지는 30점입니다. Tier 1/2/3/4의 가점은 각각 120/90/60/30점입니다.
 
 기본 설정은 Tier 1~3에 지정한 저널만 결과에 포함합니다. 새로운 저널도 탐색하고 싶을 때만 `journal_policy.allow_unlisted_journals`를 `true`로 바꾸세요.
