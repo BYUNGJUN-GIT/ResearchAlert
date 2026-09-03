@@ -214,7 +214,7 @@ def _to_paper(work: dict[str, Any], config: AlertConfig) -> Paper | None:
     location = work.get("primary_location") if isinstance(work.get("primary_location"), dict) else {}
     landing_page_url = _string_or_none(location.get("landing_page_url")) or doi
     if not abstract:
-        abstract = fetch_public_abstract(landing_page_url)
+        abstract = fetch_public_abstract(landing_page_url) or ""
         if abstract:
             print(f"OpenAlex 초록 미제공: 공개 저널 메타데이터로 보완 ({title})", file=sys.stderr)
 
